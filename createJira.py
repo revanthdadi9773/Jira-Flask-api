@@ -8,7 +8,7 @@ app = Flask(__name__)
 # Jira Credentials (Hardcoded for now)
 JIRA_URL = "https://dadirevanth9773-1742278721180.atlassian.net/rest/api/3/issue"
 JIRA_EMAIL = "dadirevanth9773@gmail.com"
-JIRA_API_TOKEN = "ATATT3xFfGF0VlsWiPUB7YL44UkT9JitfDwqDrMQgax26-k16aI1JboZHBGWZdxOZ1LTvOrQ4q08yvBi8WLKB0wMUQnjwqpzi6GCEF1VZ3SjFr18mRHSNCgtzNYaODj52ET4iQni1GIxFC7dsPcrylQTSnPc1Pl3cYrJcZu7jxHiPHWgjcgUWqs=3C5C608B"
+JIRA_API_TOKEN = "ATATT3xFfGF0GE8SEocVAWSFllIJ-mZfE5QsNqJUHY51hIDltTU_suYMmnAjn95UHu7uPQRUw48XsT9Jy-Grt4S9dG3I1QdzpQFdCcrtr8jYWT8LqYHvQuBqRY6BvcbNXZLnQIvWC4dqtOjpy54erirNlMdruupLYnY8vDwbMIuBkx2vLmwm_i8=B684D7BD"
 
 # Jira Project & Issue Type (Update if needed)
 JIRA_PROJECT_KEY = "SCRUM"  # Ensure this is correct in Jira

@@ -1,71 +1,67 @@
 import requests
 from requests.auth import HTTPBasicAuth
 import json
-from flask import Flask, request
+from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
+# Jira Credentials (Hardcoded for now)
+JIRA_URL = "https://dadirevanth9773-1742278721180.atlassian.net/rest/api/3/issue"
+JIRA_EMAIL = "dadirevanth9773@gmail.com"
+JIRA_API_TOKEN = "ATATT3xFfGF0VlsWiPUB7YL44UkT9JitfDwqDrMQgax26-k16aI1JboZHBGWZdxOZ1LTvOrQ4q08yvBi8WLKB0wMUQnjwqpzi6GCEF1VZ3SjFr18mRHSNCgtzNYaODj52ET4iQni1GIxFC7dsPcrylQTSnPc1Pl3cYrJcZu7jxHiPHWgjcgUWqs=3C5C608B"
+
+# Jira Project & Issue Type (Update if needed)
+JIRA_PROJECT_KEY = "SCRUM"  # Ensure this is correct in Jira
+JIRA_ISSUE_TYPE_ID = "10003"  # Verify this ID in your Jira settings
+
 @app.route('/createJira', methods=['POST'])
 def createJira():
-    # Step 1: Receive JSON payload from GitHub webhook
+    """Handles GitHub webhook and creates a Jira issue if '/jira' is commented."""
+
+    # Ensure JSON payload
+    if not request.is_json:
+        return jsonify({"error": "Invalid Content-Type. Use application/json"}), 415
+
+    # Parse incoming JSON
     data = request.get_json()
-    print("Webhook received:", json.dumps(data, indent=2))  # For debugging
+    print("Webhook received:", json.dumps(data, indent=2))  # Debugging
 
-    # Step 2: Get comment body (if exists)
+    # Extract and check the comment
     comment_body = data.get("comment", {}).get("body", "").strip().lower()
-
-    # Step 3: Check if comment is exactly "/jira"
     if comment_body != "/jira":
-        return { "message": "No /jira command found in comment. Skipping Jira creation." }, 200
+        return jsonify({"message": "No /jira command found. Skipping Jira creation."}), 200
 
-    # Step 4: Extract issue details from webhook payload
-    issue_title = data.get("issue", {}).get("title", "No title")
-    issue_body = data.get("issue", {}).get("body", "No description provided.")
-    issue_url = data.get("issue", {}).get("html_url", "")
+    # Extract issue details
+    issue_title = data.get("issue", {}).get("title", "No title provided")
+    issue_body = data.get("issue", {}).get("body", "No description available.")
+    issue_url = data.get("issue", {}).get("html_url", "No URL available")
 
-    # Step 5: Build Jira ticket payload
+    # Construct Jira issue payload
     payload = json.dumps({
         "fields": {
-            "project": {
-                "key": "AB"  # Replace with your Jira project key
-            },
+            "project": {"key": JIRA_PROJECT_KEY},
             "summary": issue_title,
-            "description": {
-                "type": "doc",
-                "version": 1,
-                "content": [
-                    {
-                        "type": "paragraph",
-                        "content": [
-                            {
-                                "type": "text",
-                                "text": f"{issue_body}\n\nGitHub Issue Link: {issue_url}"
-                            }
-                        ]
-                    }
-                ]
-            },
-            "issuetype": {
-                "id": "10006"  # Replace with your issue type ID
-            }
+            "description": f"{issue_body}\n\nGitHub Issue: {issue_url}",
+            "issuetype": {"id": JIRA_ISSUE_TYPE_ID}
         }
     })
 
-    # Step 6: Send POST request to Jira API
-    jira_url = "https://veeramallaabhishek.atlassian.net/rest/api/3/issue"
-    jira_email = "your_email@example.com"           # Replace with your Jira email
-    jira_token = "your_jira_api_token_here"         # Replace with your Jira API token
+    # Send Jira API request
+    headers = {"Accept": "application/json", "Content-Type": "application/json"}
+    auth = HTTPBasicAuth(JIRA_EMAIL, JIRA_API_TOKEN)
 
-    auth = HTTPBasicAuth(jira_email, jira_token)
-    headers = {
-        "Accept": "application/json",
-        "Content-Type": "application/json"
-    }
+    response = requests.post(JIRA_URL, headers=headers, data=payload, auth=auth)
 
-    response = requests.post(jira_url, headers=headers, data=payload, auth=auth)
-
-    # Step 7: Return response from Jira
-    return json.dumps(json.loads(response.text), indent=4), response.status_code
+    # Handle API response
+    try:
+        response_json = response.json()
+        print("Jira API Response:", json.dumps(response_json, indent=2))  # Debugging
+        if response.status_code == 201:
+            return jsonify({"message": "Jira issue created successfully", "jira_response": response_json}), 201
+        else:
+            return jsonify({"error": "Failed to create Jira issue", "jira_response": response_json}), response.status_code
+    except json.JSONDecodeError:
+        return jsonify({"error": "Jira API response is not valid JSON", "response_text": response.text}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)

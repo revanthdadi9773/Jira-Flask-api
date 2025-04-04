@@ -5,14 +5,14 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-# Jira Credentials (Hardcoded for now)
+# Jira Credentials (Ensure API token is stored securely)
 JIRA_URL = "https://dadirevanth9773-1742278721180.atlassian.net/rest/api/3/issue"
 JIRA_EMAIL = "dadirevanth9773@gmail.com"
-JIRA_API_TOKEN = "ATATT3xFfGF0GE8SEocVAWSFllIJ-mZfE5QsNqJUHY51hIDltTU_suYMmnAjn95UHu7uPQRUw48XsT9Jy-Grt4S9dG3I1QdzpQFdCcrtr8jYWT8LqYHvQuBqRY6BvcbNXZLnQIvWC4dqtOjpy54erirNlMdruupLYnY8vDwbMIuBkx2vLmwm_i8=B684D7BD"
+JIRA_API_TOKEN = "ATATT3xFfGF077llPUzYL3TS6V5SvEhVn4cWDBEnYgAzNFuH8NvsLqqpMTps8AbBTA8dsYLXehIF7OAI-qX2VyX8_tlIL7UO86G89BbTADL13V4HRfrAa8j0h_XSf8r5hd4I-M4UA9E-WzHCXLv05OzLZZ7be0203NfCbhKL78Pw4otmOngDKL8=6714F78B"  # Store securely in environment variables
 
 # Jira Project & Issue Type (Update if needed)
-JIRA_PROJECT_KEY = "SCRUM"  # Ensure this is correct in Jira
-JIRA_ISSUE_TYPE_ID = "10003"  # Verify this ID in your Jira settings
+JIRA_PROJECT_KEY = "SCRUM"
+JIRA_ISSUE_TYPE_ID = "10003"
 
 @app.route('/createJira', methods=['POST'])
 def createJira():
@@ -39,10 +39,28 @@ def createJira():
     # Construct Jira issue payload
     payload = json.dumps({
         "fields": {
-            "project": {"key": JIRA_PROJECT_KEY},
             "summary": issue_title,
-            "description": f"{issue_body}\n\nGitHub Issue: {issue_url}",
-            "issuetype": {"id": JIRA_ISSUE_TYPE_ID}
+            "description": {
+                "type": "doc",
+                "version": 1,
+                "content": [
+                    {
+                        "type": "paragraph",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": f"{issue_body}\n\nGitHub Issue: {issue_url}"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "project": {
+                "key": JIRA_PROJECT_KEY
+            },
+            "issuetype": {
+                "id": JIRA_ISSUE_TYPE_ID
+            }
         }
     })
 

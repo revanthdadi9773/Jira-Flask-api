@@ -1,0 +1,65 @@
+name: Manual Tag Creator
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Target branch to tag (e.g., main, develop)'
+        required: true
+      tag:
+        description: 'Tag name to create (e.g., v1.0.0)'
+        required: true
+      commit:
+        description: 'Optional commit SHA to tag (defaults to HEAD of selected branch)'
+        required: false
+
+jobs:
+  tag-commit:
+    name: Create and Push Tag
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Required to access full commit history and tags
+
+      - name: 🔄 Fetch Remote Branches and Tags
+        run: git fetch --all --tags
+
+      - name: 🔍 Determine Commit SHA to Tag
+        id: resolve_commit
+        run: |
+          if [ -z "${{ github.event.inputs.commit }}" ]; then
+            echo "➤ No commit SHA provided. Using latest commit on branch '${{ github.event.inputs.branch }}'"
+            git fetch origin ${{ github.event.inputs.branch }} --depth=1
+            COMMIT_SHA=$(git rev-parse origin/${{ github.event.inputs.branch }})
+          else
+            echo "➤ Using provided commit SHA: ${{ github.event.inputs.commit }}"
+            COMMIT_SHA="${{ github.event.inputs.commit }}"
+          fi
+          echo "commit_sha=$COMMIT_SHA" >> $GITHUB_OUTPUT
+
+      - name: 🏷️ Create and Push Git Tag
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+
+          echo "➤ Creating tag '${{ github.event.inputs.tag }}' for commit '${{ steps.resolve_commit.outputs.commit_sha }}'"
+          git tag ${{ github.event.inputs.tag }} ${{ steps.resolve_commit.outputs.commit_sha }}
+
+          echo "➤ Pushing tag to origin"
+          git push origin ${{ github.event.inputs.tag }}
+
+
+
+
+
+
+
+
+
+
+
+
+

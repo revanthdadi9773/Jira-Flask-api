@@ -1,0 +1,43 @@
+name: Validate PR Title for Jira Ticket
+
+on:
+  pull_request:
+    types: [opened, edited, reopened]
+
+jobs:
+  check-pr-title:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate Jira Ticket in PR Title
+        id: validate
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          echo "PR Title: $PR_TITLE"
+
+          # Regex pattern for Jira ticket (e.g., INFRA-123, WIN-999)
+          if [[ "$PR_TITLE" =~ [A-Z]+-[0-9]+ ]]; then
+            TICKET=$(echo "$PR_TITLE" | grep -oE '[A-Z]+-[0-9]+' | head -1)
+            echo "✅ Found Jira Ticket: $TICKET"
+            echo "ticket=$TICKET" >> $GITHUB_OUTPUT
+          else
+            echo "❌ PR title must include a Jira ticket like ABC-123"
+            exit 1
+          fi
+
+      - name: Comment Jira Link on PR
+        if: steps.validate.outputs.ticket != ''
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const ticket = "${{ steps.validate.outputs.ticket }}";
+            const jiraBaseUrl = "https://jira.company.com"; // 🔁 Replace with your Jira domain
+            const jiraLink = `${jiraBaseUrl}/browse/${ticket}`;
+            const message = `🔗 Linked Jira Ticket: [${ticket}](${jiraLink})`;
+
+            await github.rest.issues.createComment({
+              issue_number: context.payload.pull_request.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            });

@@ -1,5 +1,8 @@
 name: Manual Tag Creator
 
+permissions:
+  contents: write  # 👈 allows pushing tags via the default token
+
 on:
   workflow_dispatch:
     inputs:

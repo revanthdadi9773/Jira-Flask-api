@@ -31,7 +31,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const ticket = "${{ steps.validate.outputs.ticket }}";
-            const jiraBaseUrl = "https://jira.company.com"; // 🔁 Replace with your Jira domain
+            const jiraBaseUrl = "https://dadirevanth9773-1742278721180.atlassian.net/"; // 🔁 Replace with your Jira domain
             const jiraLink = `${jiraBaseUrl}/browse/${ticket}`;
             const message = `🔗 Linked Jira Ticket: [${ticket}](${jiraLink})`;
 

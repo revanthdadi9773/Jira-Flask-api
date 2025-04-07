@@ -11,7 +11,7 @@ JIRA_EMAIL = "dadirevanth9773@gmail.com"
 JIRA_API_TOKEN = "ATATT3xFfGF077llPUzYL3TS6V5SvEhVn4cWDBEnYgAzNFuH8NvsLqqpMTps8AbBTA8dsYLXehIF7OAI-qX2VyX8_tlIL7UO86G89BbTADL13V4HRfrAa8j0h_XSf8r5hd4I-M4UA9E-WzHCXLv05OzLZZ7be0203NfCbhKL78Pw4otmOngDKL8=6714F78B"  # Store securely in environment variables
 
 # Jira Project & Issue Type (Update if needed)
-JIRA_PROJECT_KEY = "JFA"
+JIRA_PROJECT_KEY = "SCRUM"
 JIRA_ISSUE_TYPE_ID = "10003"
 
 @app.route('/createJira', methods=['POST'])
